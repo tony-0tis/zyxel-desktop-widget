@@ -17,98 +17,102 @@ exports.req = function(settings, config, cb){
 		let bodyLength = body.length;
 
 		parseString(body, (err, res) => {
-			let result = {
-				timestamp: Date.now(),
-				stats: {}
-			};
-			res = res.packet.response;
-			if(config.updateConfig){
-				config.updateConfig = false;
+			try{
+				let result = {
+					timestamp: Date.now(),
+					stats: {}
+				};
+				res = res.packet.response;
+				if(config.updateConfig){
+					config.updateConfig = false;
 
-				if(res[0]){
-					config.ports = {};
-					res[0].port.splice(1).map(p => {
-						config.ports[p.index[0]] = {
-							on: false
-						};
-						if(p.link[0] == 'up'){
-							config.ports[p.index[0]].on = true;
-						}
-					});
-				}
-				if(res[1]){
-					res[1].mactable.map(m => {
-						if(m.port[0] != '0'){
-							config.ports[m.port[0]] = config.ports[m.port[0]] || {}
-							config.ports[m.port[0]].mac = m.mac[0];
-						}
-					});
-				}
-
-				config.users = {};
-				if(res[2]){
-					config.users = res[2].lease.reduce((res, user) => {
-						let mac = user.mac[0];
-						res[mac] = user;
-						return res;
-					}, {});
-				}
-				result.config = config;
-				cb(null, result);
-				return;
-			}
-
-			if(res[0]){//internet
-				let networkLoad = res[0];
-				let routerTs = networkLoad.timestamp[0] || Date.now()/1e3;
-				prevStat.Internet = prevStat.Internet || {rx: {}, tx: {}};
-
-				result.stats.Internet = bitsSec(
-					routerTs,
-					networkLoad.rxbytes[0],
-					networkLoad.txbytes[0],
-					prevStat.Internet,
-					'Internet'
-				);
-			}
-
-			let resId = 1;
-			res[1] = res[1] || {station: {}};
-			for(let i in config.ports){
-				let port = config.ports[i];
-				if(!port.on){
-					continue;
-				}
-				resId++;
-				let client = res[resId];
-				if(!client){
-					continue
-				}
-
-				client.mac = [port.mac];
-				res[1].station.push(client);
-			}
-
-			if(res[1]){
-				let cutTs = Date.now()/1e3;
-				res[1].station.forEach(client => {
-					let mac = client.mac[0];
-					if(!mac){
-						result.updateConfig = true;
-						return;
+					if(res[0]){
+						config.ports = {};
+						res[0].port.splice(1).map(p => {
+							config.ports[p.index[0]] = {
+								on: false
+							};
+							if(p.link[0] == 'up'){
+								config.ports[p.index[0]].on = true;
+							}
+						});
+					}
+					if(res[1]){
+						res[1].mactable.map(m => {
+							if(m.port[0] != '0'){
+								config.ports[m.port[0]] = config.ports[m.port[0]] || {}
+								config.ports[m.port[0]].mac = m.mac[0];
+							}
+						});
 					}
 
-					let user = config.users[mac] || {name: [mac]};
-					prevStat[mac] = prevStat[mac] || {rx: {}, tx: {}}
+					config.users = {};
+					if(res[2]){
+						config.users = res[2].lease.reduce((res, user) => {
+							let mac = user.mac[0];
+							res[mac] = user;
+							return res;
+						}, {});
+					}
+					result.config = config;
+					cb(null, result);
+					return;
+				}
 
-					result.stats[(user.name && user.name[0] || user.hostname[0] || user.ip[0])] = bitsSec(
-						cutTs,
-						client.rxbytes[0],
-						client.txbytes[0],
-						prevStat[mac],
-						mac
+				if(res[0]){//internet
+					let networkLoad = res[0];
+					let routerTs = networkLoad.timestamp[0] || Date.now()/1e3;
+					prevStat.Internet = prevStat.Internet || {rx: {}, tx: {}};
+
+					result.stats.Internet = bitsSec(
+						routerTs,
+						networkLoad.rxbytes[0],
+						networkLoad.txbytes[0],
+						prevStat.Internet,
+						'Internet'
 					);
-				});
+				}
+
+				let resId = 1;
+				res[1] = res[1] || {station: {}};
+				for(let i in config.ports){
+					let port = config.ports[i];
+					if(!port.on){
+						continue;
+					}
+					resId++;
+					let client = res[resId];
+					if(!client){
+						continue
+					}
+
+					client.mac = [port.mac];
+					res[1].station.push(client);
+				}
+
+				if(res[1]){
+					let cutTs = Date.now()/1e3;
+					res[1].station.forEach(client => {
+						let mac = client.mac[0];
+						if(!mac){
+							result.updateConfig = true;
+							return;
+						}
+
+						let user = config.users[mac] || {name: [mac]};
+						prevStat[mac] = prevStat[mac] || {rx: {}, tx: {}}
+
+						result.stats[(user.name && user.name[0] || user.hostname[0] || user.ip[0])] = bitsSec(
+							cutTs,
+							client.rxbytes[0],
+							client.txbytes[0],
+							prevStat[mac],
+							mac
+						);
+					});
+				}
+			}catch(e){
+				return cb(e);
 			}
 
 			cb(null, result);
