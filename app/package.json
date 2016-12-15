@@ -1,0 +1,42 @@
+{
+  "name": "zyxel-inet-load",
+  "version": "1.0.1",
+  "description": "Desktop widget for internet loading info for Zyxel keenectic giga 2",
+  "main": "main.js",
+  "dependencies": {
+    "request": "^2.79.0",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "electron": "^1.4.12",
+    "electron-builder": "^10.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/electron .",
+    "build": "./node_modules/.bin/build",
+    "preversion": "mkdir .git || true",
+    "postversion": "npm run build"
+  },
+  "keywords": [
+    "zyxel",
+    "telnet",
+    "graphics",
+    "electron"
+  ],
+  "author": "A.I. Developer (npmdev@aidev.io)",
+  "license": "CC-BY-NC-3.0",
+  "build": {
+    "appId": "zyxel-inet-load",
+    "asar": true,
+    "win": {
+      "icon": "images/logo",
+      "iconUrl": "https://github.com/aidevio/zyxel-desktop-widget/raw/master/app/images/logo.ico"
+    }
+  },
+  "directories": {
+    "buildResources": "../build",
+    "app": "./",
+    "output": "../release"
+  }
+}
