@@ -35,6 +35,7 @@ window.addEventListener('load', () => {
 		curl.req(settings, Object.assign({}, config), (err, res) => {
 			if(err){
 				console.log(err);
+				setTimeout(req, settings.interval || 1000);
 				return;
 			}
 
