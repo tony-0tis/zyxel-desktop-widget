@@ -1,6 +1,6 @@
 {
   "name": "zyxel-inet-load",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Desktop widget for internet loading info for Zyxel keenectic giga 2",
   "main": "main.js",
   "dependencies": {
