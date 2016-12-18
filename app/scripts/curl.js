@@ -17,11 +17,11 @@ exports.req = function(settings, config, cb){
 		let bodyLength = body.length;
 
 		parseString(body, (err, res) => {
+			let result = {
+				timestamp: Date.now(),
+				stats: {}
+			};
 			try{
-				let result = {
-					timestamp: Date.now(),
-					stats: {}
-				};
 				res = res.packet.response;
 				if(config.updateConfig){
 					config.updateConfig = false;
@@ -83,8 +83,11 @@ exports.req = function(settings, config, cb){
 					resId++;
 					let client = res[resId];
 					if(!client){
-						continue
+						continue;
 					}
+
+					//in NDMS v2.06(AAFS.9)C1 they have bug, which replaces in and out data
+					[client.rxbytes, client.txbytes] = [client.txbytes, client.rxbytes];
 
 					client.mac = [port.mac];
 					res[1].station.push(client);
