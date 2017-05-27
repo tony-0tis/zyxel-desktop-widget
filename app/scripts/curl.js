@@ -104,7 +104,7 @@ exports.req = function(settings, config, cb){
 						continue;
 					}
 
-					//in NDMS v2.06(AAFS.9)C1 they have bug, which replaces in and out data
+					// architecture feature - txbytes for internet port is incoming, for lan ports the same property is outcoming from router to client, for client txbytes will remain incoming traffic
 					[client.rxbytes, client.txbytes] = [client.txbytes, client.rxbytes];
 
 					client.mac = [port.mac];
