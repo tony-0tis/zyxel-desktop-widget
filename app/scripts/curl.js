@@ -23,6 +23,24 @@ exports.req = function(settings, config, cb){
 			};
 			try{
 				res = res.packet.response;
+				for(let i in res){
+					if(res[i].error){
+						return cb(res[i].error.map(e=>e._), null, true);
+					}
+				}
+				if(config.getInterfaces){
+					result.interfaces = res[0].interface.map(i=>{
+						return {
+							name: i['interface-name'][0],
+							type: i.type[0],
+							desc: i.description && i.description[0]
+						};
+					});
+					return cb(null, result);
+				}
+				if(config.checkConfig){
+					return cb(null, true);
+				}
 				if(config.updateConfig){
 					config.updateConfig = false;
 
@@ -125,7 +143,20 @@ exports.req = function(settings, config, cb){
 
 function getOptions(settings, config){
 	let body = '<packet ref="/">';
-	if(config.updateConfig){
+	if(config.getInterfaces){
+		body += `<request id="1" ref="former.list[load]">
+				<command name="show interface">
+				</command>
+			</request>`;
+	}
+	else if(config.checkConfig){
+		body += `<request id="1" ref="former.status[ready]/former.status[load]">
+				<command name="show interface stat">
+					<name>${settings.inetInterface}</name>
+				</command>
+			</request>`;
+	}
+	else if(config.updateConfig){
 		body += `<request id="1" ref="former.list[load]">
 				<command name="show interface">
 					<name>GigabitEthernet0</name>

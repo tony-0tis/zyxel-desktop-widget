@@ -32,9 +32,14 @@ window.addEventListener('load', () => {
 		config.updateConfig = true
 	}, 1000 * 60 * 5);
 	let req = () => {
-		curl.req(settings, Object.assign({}, config), (err, res) => {
+		curl.req(settings, Object.assign({}, config), (err, res, stop) => {
 			if(err){
 				console.log(err);
+				if(stop){
+					document.body.innerHTML = 'Fatal error:' + err + '; fix it then reload app';
+					return;
+				}
+				//alert(err);
 				setTimeout(req, settings.interval || 1000);
 				return;
 			}
@@ -76,7 +81,6 @@ let lineConfig = {
 let dir = 'in';
 window.oncontextmenu = () => {
 	dir = dir == 'in' ? 'out' : 'in';
-	get('type').innerHTML = dir;
 };
 function fillChartData(type, stat, time){
 	if(!lines[type]){
@@ -94,9 +98,16 @@ function fillChartData(type, stat, time){
 		get('legend').querySelector('.list').appendChild(tr);
 	}
 	lines[type].append(time, stat[dir] / 1024);
+	if(type == 'Internet'){
+		get('type').innerHTML = dir + ' <em>' + fnum(parseInt(stat[dir] / 1024)) + ' kb/s</em>';
+	}
 	let el = get('dev_' + stat.mac);
 	if(el){
-		el.querySelector('.in').innerHTML = parseInt(stat.in / 1024);
-		el.querySelector('.out').innerHTML = parseInt(stat.out / 1024);
+		el.querySelector('.in').innerHTML = fnum(parseInt(stat.in / 1024));
+		el.querySelector('.out').innerHTML = fnum(parseInt(stat.out / 1024));
 	}
+}
+
+function fnum(d){
+	return Number(d).toLocaleString();
 }
