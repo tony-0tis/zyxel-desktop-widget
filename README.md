@@ -7,4 +7,3 @@ Using this widget you load the router cpu up to 40%
 
 Builds only win x64
 [Setup.exe](http://aia.ninja/releases/zyxel/Setup.exe)
-[Build.7z](http://aia.ninja/releases/zyxel/Build.7z)
