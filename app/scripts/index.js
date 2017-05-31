@@ -20,8 +20,8 @@ window.addEventListener('load', () => {
 	get('bar').height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 	
 	setTimeout(() => {
-	get('bar').width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-	get('bar').height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+		get('bar').width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		get('bar').height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 	}, 100);
 
 	smoothie.streamTo(document.getElementById("bar"), 1000);
@@ -36,7 +36,7 @@ window.addEventListener('load', () => {
 			if(err){
 				console.log(err);
 				if(stop){
-					document.body.innerHTML = 'Fatal error:' + err + '; fix it then reload app';
+					document.body.innerHTML = 'Fatal error: <b>' + err + '</b>; fix it then reload app';
 					return;
 				}
 				//alert(err);
@@ -88,12 +88,12 @@ function fillChartData(type, stat, time){
 		let config = lineConfig[type] || {strokeStyle: "hsl(" + Math.random() * 360 + ", 100%, 75%)", lineWidth: 2};
 		smoothie.addTimeSeries(lines[type], config);
 		
-		let tr = d.createElement('tr');
+		let tr = d.createElement('div');
 		tr.id = "dev_" + stat.mac;
 		tr.innerHTML = `
-			<td class="name" style="color:${config.strokeStyle}">${type}</td>
-			<td class="in">0</td>
-			<td class="out">0</td>
+			<div class="name" style="color:${config.strokeStyle}">${type}</div>
+			<div class="in">0</div>
+			<div class="out">0</div>
 		`;
 		get('legend').querySelector('.list').appendChild(tr);
 	}
@@ -105,6 +105,7 @@ function fillChartData(type, stat, time){
 	if(el){
 		el.querySelector('.in').innerHTML = fnum(parseInt(stat.in / 1024));
 		el.querySelector('.out').innerHTML = fnum(parseInt(stat.out / 1024));
+		el.style.order = parseInt(stat[dir] / 1024) + (type == 'Internet' ? 100000 : 0);
 	}
 }
 

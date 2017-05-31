@@ -35,6 +35,8 @@
         color: #fff;
         overflow-y: auto;
         overflow-x: hidden;
+        padding: 3px;
+    box-sizing: border-box;
       }
       .name{
         width: 100px;
@@ -43,11 +45,33 @@
         display: table-caption;
         font-weight: bold;
       }
-      .list th{
+      .list {
+          display: flex;
+          flex-direction: column-reverse;
+          width: 100%;
+      }
+      .list>div {
+          display: flex;
+      }
+      .list .head{
+        order: 100000000000;
+      }
+      .list .head>div{
         font-weight: normal;
         white-space: nowrap;
       }
-      #dev_Internet{background: #3c3c3c;}
+      .list .in{
+            flex-basis: 50px;
+      }
+      .list .out{
+            flex-basis: 50px;
+      }
+      #dev_Internet{
+        border: 1px solid #6b6b6b;
+      }
+      #div_Internet .name{
+            text-shadow: 0px 0px 0px #ff5d5d;
+      }
       #legend::-webkit-scrollbar{width: 4px;height: 4px;background-color: #F5F5F5;}
       #legend::-webkit-scrollbar-thumb{border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.5);background-color: #ffffff;}
       #legend::-wekit-scrollbar-track{-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2);border-radius: 10px;background-color: #f3f3f3;}
@@ -56,9 +80,13 @@
   <body>
     <div id="type">In</div>
     <div id='legend'>
-      <table class="list" border="0">
-        <tr><th>Name</th><th>In kb/s</th><th>Out kb/s</th></tr>
-      </table>
+      <div class="list" border="0">
+        <div class="head">
+          <div class="name">Name</div>
+          <div class="in">In kb/s</div>
+          <div class="out">Out kb/s</div>
+        </div>
+      </div>
     </div>
     <canvas id="bar" width="100%" height="100%"></canvas>
   </body>

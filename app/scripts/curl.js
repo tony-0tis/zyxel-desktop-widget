@@ -44,7 +44,7 @@ exports.req = function(settings, config, cb){
 				if(config.updateConfig){
 					config.updateConfig = false;
 
-					if(res[0]){
+					if(res[0]){//process port configuration -> show interface GigabitEthernet0 
 						config.ports = {};
 						res[0].port.splice(1).map(p => {
 							config.ports[p.index[0]] = {
@@ -55,7 +55,7 @@ exports.req = function(settings, config, cb){
 							}
 						});
 					}
-					if(res[1]){
+					if(res[1]){// bind mac to port -> show interface mac GigabitEthernet0 
 						res[1].mactable.map(m => {
 							if(m.port[0] != '0'){
 								config.ports[m.port[0]] = config.ports[m.port[0]] || {}
@@ -65,7 +65,7 @@ exports.req = function(settings, config, cb){
 					}
 
 					config.users = {};
-					if(res[2]){
+					if(res[2]){// list of connected users with dhcp -> show ip dhcp bindings 
 						config.users = res[2].lease.reduce((res, user) => {
 							let mac = user.mac[0];
 							res[mac] = user;
@@ -77,8 +77,8 @@ exports.req = function(settings, config, cb){
 					return;
 				}
 
-				if(res[0]){//internet
-					let networkLoad = res[0];
+				if(res[0]){// current internet stats -> show interface stat
+					let networkLoad = res.shift();
 					let routerTs = networkLoad.timestamp[0] || Date.now()/1e3;
 					prevStat.Internet = prevStat.Internet || {rx: {}, tx: {}};
 
@@ -91,15 +91,15 @@ exports.req = function(settings, config, cb){
 					);
 				}
 
-				let resId = 1;
-				res[1] = res[1] || {station: {}};
+				let associations = res.shift() || {station: {}};//show associations
+				let idi = 0;
 				for(let i in config.ports){
 					let port = config.ports[i];
-					if(!port.on){
+					if(!port.on || !port.mac){
 						continue;
 					}
-					resId++;
-					let client = res[resId];
+					let client = res[idi];
+					idi++;
 					if(!client){
 						continue;
 					}
@@ -108,30 +108,28 @@ exports.req = function(settings, config, cb){
 					[client.rxbytes, client.txbytes] = [client.txbytes, client.rxbytes];
 
 					client.mac = [port.mac];
-					res[1].station.push(client);
+					associations.station.push(client);
 				}
 
-				if(res[1]){
-					let cutTs = Date.now()/1e3;
-					res[1].station.forEach(client => {
-						let mac = client.mac[0];
-						if(!mac){
-							result.updateConfig = true;
-							return;
-						}
+				let cutTs = Date.now()/1e3;
+				associations.station.forEach(client => {
+					let mac = client.mac[0];
+					if(!mac){
+						result.updateConfig = true;
+						return;
+					}
 
-						let user = config.users[mac] || {name: [mac]};
-						prevStat[mac] = prevStat[mac] || {rx: {}, tx: {}}
+					let user = config.users[mac] || {name: [mac]};
+					prevStat[mac] = prevStat[mac] || {rx: {}, tx: {}}
 
-						result.stats[(user.name && user.name[0] || user.hostname[0] || user.ip[0])] = bitsSec(
-							cutTs,
-							client.rxbytes[0],
-							client.txbytes[0],
-							prevStat[mac],
-							mac
-						);
-					});
-				}
+					result.stats[(user.name && user.name[0] || user.hostname[0] || user.ip[0])] = bitsSec(
+						cutTs,
+						client.rxbytes[0],
+						client.txbytes[0],
+						prevStat[mac],
+						mac
+					);
+				});
 			}catch(e){
 				return cb(e);
 			}
